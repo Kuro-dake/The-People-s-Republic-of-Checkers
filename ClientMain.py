@@ -9,7 +9,7 @@ from OfflineLoop import OfflineLoop
 from Client.Board import Board
 from Client.Input import Input
 
-CONSOLE_VERSION: bool = True
+CONSOLE_VERSION: bool = False
 
 if CONSOLE_VERSION:
     loop = OfflineLoop()

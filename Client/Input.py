@@ -4,6 +4,7 @@ import Piece
 
 from Client.Board import Board
 from Database import Database
+from RuleObserver import RuleObserver
 
 class Input(object):
 
@@ -28,7 +29,7 @@ class Input(object):
                 self.db.move_piece(
                     self.board.selected_piece, Board.translate_to_db_coordinates(Board.get_square_position(x, y))
                 )
-                #print(Square.vector2_to_position_query(Board.translate_to_db_coordinates(Board.get_square_position(x, y))))
+
 
             self.board.select_piece_at_mouse_pos(event.pos[0], event.pos[1])
 

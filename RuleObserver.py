@@ -4,15 +4,14 @@ from Vector2 import Vector2
 from enum import Enum
 from typing import List
 
-# Moves the Piece objects in the context of the database with
-# regard to the game rules constraints
-class PieceMover(object):
+
+# Logic regarding the checkers rules
+class RuleObserver(object):
 
     def __init__(self):
         self.db = Database()
         self.skipped_piece: Piece = None
 
-    
 
     def move_piece(self, piece: Piece, to_pos: Vector2, force_back_move: bool=False):
         self.skipped_piece = None

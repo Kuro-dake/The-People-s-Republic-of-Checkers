@@ -4,20 +4,20 @@ from Database import Database
 from Piece import Piece
 from Square import Square, InvalidPositionQueryException
 from Vector2 import Vector2
-from PieceMover import PieceMover
+from RuleObserver import RuleObserver
 
 class PositionQueryHandler(object):
 
     def __init__(self):
         self.db = Database()
-        self.piece_mover = PieceMover()
+        self.piece_mover = RuleObserver()
 
     MESSAGES = {
-        PieceMover.Result.SUCCESS: "Move successful",
-        PieceMover.Result.NONE_PIECE: "There is no piece at position {0}",
-        PieceMover.Result.SQUARE_OCCUPIED: "Target position {0} is already occupied",
-        PieceMover.Result.WRONG_DIRECTION: "Piece at {0} can not move to {1} - wrong direction, or too far",
-        PieceMover.Result.TOO_MANY_SKIPPED_PIECES: "More than one piece skipped"
+        RuleObserver.Result.SUCCESS: "Move successful",
+        RuleObserver.Result.NONE_PIECE: "There is no piece at position {0}",
+        RuleObserver.Result.SQUARE_OCCUPIED: "Target position {0} is already occupied",
+        RuleObserver.Result.WRONG_DIRECTION: "Piece at {0} can not move to {1} - wrong direction, or too far",
+        RuleObserver.Result.TOO_MANY_SKIPPED_PIECES: "More than one piece skipped"
     }
 
     def handle(self, move_query: str) -> str:
