@@ -15,7 +15,7 @@ class Piece(object):
         self.bottom_side = bottom_side
         self.piece_id = piece_id
         # man or king
-        self.state = state
+        self.is_king = state
 
     # create a piece filled with a record from the DB
     @staticmethod
@@ -25,17 +25,31 @@ class Piece(object):
     # figure out if we can move the piece to the specified position
     # we check for forward only movement, and if the position we are moving to
     # is empty
-    def can_move_to(self, target_position: Vector2, pieces_in_direction: Piece[int]):
+    def can_move_to_man_constraints(self, target_position: Vector2, pieces_in_direction: Piece[int], piece_side: bool):
 
         diff = self.position - target_position
         if not diff.is_diagonal:
             return False
+        # print("isf {0}".format(Square.is_square_forward(self.position, target_position, self.bottom_side)))
+        # print("len {0}".format((diff.size.x == 1 or diff.size.x == 2 and len(pieces_in_direction) == 1)))
 
-        return \
-            Square.is_square_forward(self.position, target_position, self.bottom_side) \
-            and \
-            (diff.size.x == 1 \
-             or (diff.size.x == 2 and len(pieces_in_direction)) == 1)
+        piece_to_skip: Piece = None
+
+        if len(pieces_in_direction) == 1:
+            piece_to_skip = pieces_in_direction[0]
+
+        skipping = diff.size.x == 2 and piece_to_skip is not None and piece_to_skip.bottom_side != piece_side
+
+        if skipping:
+            return True
+
+        ret: bool = Square.is_square_forward(self.position, target_position, self.bottom_side)
+        ret &= diff.size.x == 1
+
+
+        # print("ret {0}".format(ret))
+        return ret
+
 
 
 
@@ -51,7 +65,7 @@ class Piece(object):
                     , self.position.x
                     , self.position.y
                     , 1 if self.bottom_side else 0
-                    , 1 if self.state else 0)
+                    , 1 if self.is_king else 0)
 
     def __repr__(self):
         return "Piece(#{0}:{1}: side {2})".format(self.piece_id, Square.vector2_to_position_query(self.position), self.bottom_side)

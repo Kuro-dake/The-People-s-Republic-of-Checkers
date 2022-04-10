@@ -1,3 +1,4 @@
 __pycache__
 .idea
 DBCredentials.py
+Client/ServerCredentials.py

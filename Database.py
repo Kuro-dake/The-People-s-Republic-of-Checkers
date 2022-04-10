@@ -48,6 +48,11 @@ class Database(object):
         cursor.execute("INSERT INTO {0} VALUES ".format(self._table_name) + ",".join(values))
         connection.commit()
 
+    def destroy_piece(self, piece: Piece):
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM {0} WHERE id={1}".format(self._table_name, piece.piece_id))
+        connection.commit()
+
     def get_piece_at(self, pos: Union[Vector2, str]):
         if type(pos) is str:
             pos = Square.position_query_to_vector2(pos)
@@ -55,7 +60,9 @@ class Database(object):
         return next((p for p in self.get_all_pieces() if p.position == pos), None)
 
     def get_pieces_in_direction(self, position: Vector2, direction: Vector2, max_distance: int = -1):
+
         direction: Vector2 = direction - position
+
         if not direction.is_diagonal:
             raise Exception("direction dimensions have to be of same size")
 
@@ -64,7 +71,11 @@ class Database(object):
         positions: Vector2[int] = []
 
         for i in range(0, int(direction.size.x)):
-            positions.append(position + direction.direction * (i+1))
+            pos = position + direction.direction * (i + 1)
+
+            positions.append(pos)
+
+        #print(list(map(lambda p: Square.vector2_to_position_query(p), positions)))
 
         return list(piece for piece in pieces if piece.position in positions)
 
@@ -109,10 +120,12 @@ class Database(object):
                 raise Exception("Undefined x_or_pos {0} of type {1}".format(x_or_pos, type(x_or_pos)))
 
         if type(piece) is Piece:
-            piece = piece.piece_id
+            piece.position = Vector2(x, y)
+            piece_id: int = piece.piece_id
 
-        query = "UPDATE {0} SET x_pos={1}, y_pos={2} WHERE id={3}".format(self._table_name, x, y, piece)
-        print(query)
+        query = "UPDATE {0} SET x_pos={1}, y_pos={2}, state={4} WHERE id={3}"\
+            .format(self._table_name, x, y, piece_id, 1 if piece.is_king else 0)
+        # print(query)
         cursor.execute(query)
         connection.commit()
 

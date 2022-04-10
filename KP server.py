@@ -2,14 +2,8 @@
 # mysql-connector-python
 
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from RequestHandler import RequestHandler
-import Database
-
-from OfflineLoop import OfflineLoop
-
-import time, json
-
+from http.server import HTTPServer
+from Server.RequestHandler import RequestHandler
 
 hostName = "localhost"
 serverPort = 8000
@@ -23,7 +17,10 @@ serverPort = 8000
 #exit()
 
 webServer = HTTPServer((hostName, serverPort), RequestHandler)
+
 #print("Server started http://%s:%s" % (hostName, serverPort))
+
+print("Server started")
 
 #try:
 webServer.serve_forever()

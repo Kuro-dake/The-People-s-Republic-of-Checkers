@@ -8,16 +8,17 @@ from RuleObserver import RuleObserver
 
 class PositionQueryHandler(object):
 
-    def __init__(self):
+    def __init__(self, rules: RuleObserver):
         self.db = Database()
-        self.piece_mover = RuleObserver()
+        self.rules = rules
 
     MESSAGES = {
         RuleObserver.Result.SUCCESS: "Move successful",
         RuleObserver.Result.NONE_PIECE: "There is no piece at position {0}",
         RuleObserver.Result.SQUARE_OCCUPIED: "Target position {0} is already occupied",
         RuleObserver.Result.WRONG_DIRECTION: "Piece at {0} can not move to {1} - wrong direction, or too far",
-        RuleObserver.Result.TOO_MANY_SKIPPED_PIECES: "More than one piece skipped"
+        RuleObserver.Result.TOO_MANY_SKIPPED_PIECES: "More than one piece skipped",
+        RuleObserver.Result.NOT_DIAGONAL: "You haven't even tried to move diagonally. What's wrong with you fool?"
     }
 
     def handle(self, move_query: str) -> str:
@@ -50,8 +51,8 @@ class PositionQueryHandler(object):
         except InvalidPositionQueryException:
             return "Invalid 'to' position query '{0}'".format(move_query[1])
 
-        result = self.piece_mover.move_piece(piece, to_pos, "force" in additional_params)
+        result = self.rules.move_piece(piece, to_pos, "force" in additional_params)
 
-        skipped: Piece = self.piece_mover.skipped_piece
+        skipped: Piece = self.rules.skipped_piece
 
         return ("Skipped {0}\n".format(skipped) if skipped is not None else "") + self.MESSAGES[result]

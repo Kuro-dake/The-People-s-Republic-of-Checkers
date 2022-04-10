@@ -42,7 +42,7 @@ class Vector2(object):
 
     @property
     def direction(self) -> Vector2:
-        return Vector2(1 if self.x > 1 else -1, 1 if self.y > 1 else -1)
+        return Vector2(1 if self.x >= 1 else -1, 1 if self.y >= 1 else -1)
 
     @property
     def size(self):

@@ -26,7 +26,9 @@ class OfflineLoop(object):
             move_query: str = input("{0} side turn. Input move query(e.g.A2toB3):"
                                     .format("Bottom" if bottom_side_turn else "Top"))
 
-            pqh.handle(move_query)
+            result = pqh.handle(move_query)
+
+            print(result)
 
             bottom_side_turn = not bottom_side_turn
 
