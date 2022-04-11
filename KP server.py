@@ -6,12 +6,12 @@ from http.server import HTTPServer
 from Server.RequestHandler import RequestHandler
 from Database import Database
 from DatabaseProvider import DatabaseProvider
-import Server.Config
+from Server import Config
 
 DatabaseProvider.database = Database()
 
-hostName = Server.DBCredentials.SERVER_HOST
-serverPort = Server.DBCredentials.SERVER_PORT
+hostName = Config.SERVER_HOST
+serverPort = Config.SERVER_PORT
 
 #cs = CheckersServer()
 #cs.new_game()

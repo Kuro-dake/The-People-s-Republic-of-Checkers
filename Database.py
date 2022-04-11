@@ -8,10 +8,10 @@ from Vector2 import Vector2
 from Piece import Piece
 from typing import Union, List
 
-connection = mysql.connector.connect(host=DBCredentials.DB_HOST,
-                                     database=DBCredentials.DATABASE,
-                                     user=DBCredentials.USER,
-                                     password=DBCredentials.PASSWORD)
+connection = mysql.connector.connect(host=Config.DB_HOST,
+                                     database=Config.DATABASE,
+                                     user=Config.USER,
+                                     password=Config.PASSWORD)
 
 
 class Database(object):
