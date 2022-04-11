@@ -1,20 +1,15 @@
-from Database import Database
 from PositionQueryHandler import PositionQueryHandler
-from Piece import Piece
-from Square import Square, InvalidPositionQueryException
-from Vector2 import Vector2
+
+from DatabaseProvider import DatabaseProvider
 
 # this serves for development purposes so you can play the game
 # by console commands
 class OfflineLoop(object):
 
-    def __init__(self):
-        self.checkers_server = Database()
-
     @staticmethod
     def main():
         loop = OfflineLoop()
-        db: Database = loop.checkers_server
+        db = DatabaseProvider.get_database()
         bottom_side_turn: bool = True
 
         pqh: PositionQueryHandler = PositionQueryHandler()

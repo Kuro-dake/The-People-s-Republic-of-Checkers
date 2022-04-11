@@ -1,7 +1,13 @@
+import unittest
+import sys
+import os
+
+sys.path.append(os.getcwd() + '/..')
+
 import pygame
 from OfflineLoop import OfflineLoop
-
-from Game import Game
+from DatabaseProvider import DatabaseProvider
+from Client.Game import Game
 
 CONSOLE_VERSION: bool = False
 
@@ -10,7 +16,11 @@ if CONSOLE_VERSION:
     loop.main()
     exit()
 
-Game().main()
+game = Game()
+
+DatabaseProvider.game = game
+
+game.main()
 
 
 # -------- Main Program Loop -----------

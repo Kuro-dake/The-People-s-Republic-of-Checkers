@@ -1,9 +1,13 @@
 #dependencies:
 # mysql-connector-python
-
+# requests
 
 from http.server import HTTPServer
 from Server.RequestHandler import RequestHandler
+from Database import Database
+from DatabaseProvider import DatabaseProvider
+
+DatabaseProvider.database = Database()
 
 hostName = "localhost"
 serverPort = 8000
@@ -15,6 +19,8 @@ serverPort = 8000
 #OfflineLoop.main()
 
 #exit()
+
+
 
 webServer = HTTPServer((hostName, serverPort), RequestHandler)
 

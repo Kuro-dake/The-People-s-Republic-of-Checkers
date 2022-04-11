@@ -9,13 +9,15 @@ import math
 
 from RuleObserver import RuleObserver
 
+from DatabaseProvider import DatabaseProvider
+
 class Board(object):
 
     SQUARE_SIZE = 100
 
-    def __init__(self, rules: RuleObserver):
-        self.board_size = Database.board_size
-        self.db = Database()
+    def __init__(self, rules: RuleObserver, game):
+
+        self.game = game
         self._selected_piece = None
         self.screen \
             = pygame.display.set_mode((
@@ -23,8 +25,16 @@ class Board(object):
             , self.board_size * Board.SQUARE_SIZE + Board.COORDS_PADDING * 2))
         self.font = pygame.font.SysFont("monospace", 25)
         self.rules = rules
-        pygame.display.set_caption("People's republic of checkers")
+
         pygame.font.init()
+
+    @property
+    def board_size(self):
+        return self.db().board_size
+
+    @staticmethod
+    def db():
+        return DatabaseProvider.get_database()
 
     def draw_board(self):
         mouse_pos = pygame.mouse.get_pos()
@@ -37,7 +47,7 @@ class Board(object):
         if self.selected_piece is not None:
             possible_moves = self.rules.get_possible_moves(self.selected_piece)
 
-        color = Board.RED if self.rules._current_side_bottom else Board.GREEN
+        color = Board.RED if self.game.server_data.current_turn_bottom else Board.GREEN
 
         pygame.draw.rect(self.screen, color, [Board.COORDS_PADDING * .4, Board.COORDS_PADDING * .4,
                             Board.COORDS_PADDING *.25, Board.COORDS_PADDING * .25], 0)
@@ -62,7 +72,7 @@ class Board(object):
 
         piece: Piece
 
-        for piece in self.db.get_all_pieces():
+        for piece in self.db().get_all_pieces():
             self.draw_piece(piece)
 
         self.draw_coords()
@@ -131,7 +141,7 @@ class Board(object):
     @staticmethod
     def get_square_position(mouse_x: int, mouse_y: int):
         x: int = int((mouse_x - Board.COORDS_PADDING) / Board.SQUARE_SIZE)
-        y: int = Database.board_size - int((mouse_y - Board.COORDS_PADDING) / Board.SQUARE_SIZE) - 1
+        y: int = Board.db().board_size - int((mouse_y - Board.COORDS_PADDING) / Board.SQUARE_SIZE) - 1
         return Vector2(x, y)
 
     @staticmethod
@@ -144,7 +154,7 @@ class Board(object):
                 Board.COORDS_PADDING + board_size * Board.SQUARE_SIZE - (y + 1) * Board.SQUARE_SIZE)
 
     def get_piece_at_mouse_pos(self, mouse_x: int, mouse_y: int):
-        return self.db.get_piece_at(self.translate_to_db_coordinates(self.get_square_position(mouse_x, mouse_y)))
+        return self.db().get_piece_at(self.translate_to_db_coordinates(self.get_square_position(mouse_x, mouse_y)))
 
     def select_piece_at_mouse_pos(self, mouse_x: int, mouse_y: int):
         self.select_piece(self.get_piece_at_mouse_pos(mouse_x, mouse_y))

@@ -1,4 +1,4 @@
-from typing import List, Any
+from DatabaseProvider import DatabaseProvider
 
 from Database import Database
 from Piece import Piece
@@ -9,7 +9,6 @@ from RuleObserver import RuleObserver
 class PositionQueryHandler(object):
 
     def __init__(self, rules: RuleObserver):
-        self.db = Database()
         self.rules = rules
 
     MESSAGES = {
@@ -20,6 +19,10 @@ class PositionQueryHandler(object):
         RuleObserver.Result.TOO_MANY_SKIPPED_PIECES: "More than one piece skipped",
         RuleObserver.Result.NOT_DIAGONAL: "You haven't even tried to move diagonally. What's wrong with you fool?"
     }
+
+    @property
+    def db(self):
+        return DatabaseProvider.get_database()
 
     def handle(self, move_query: str) -> str:
 
@@ -51,7 +54,7 @@ class PositionQueryHandler(object):
         except InvalidPositionQueryException:
             return "Invalid 'to' position query '{0}'".format(move_query[1])
 
-        result = self.rules.move_piece(piece, to_pos, "force" in additional_params)
+        result = self.rules.move_piece(piece, to_pos)
 
         skipped: Piece = self.rules.skipped_piece
 

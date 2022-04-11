@@ -4,7 +4,7 @@ from Piece import Piece
 from Vector2 import Vector2
 from enum import Enum
 from typing import List
-from Square import Square
+from DatabaseProvider import DatabaseProvider
 from PossibleMove import PossibleMove
 
 # Logic regarding the checkers rules
@@ -17,31 +17,30 @@ class RuleObserver(object):
             raise Exception("Creating a second instance of RuleObserver. Unless you seriously changed"
                             " the logic, you are asking for a bad time.")
         self._instantiated = True
-        self.db: Database = Database()
+        # you need to create a database provider and inject it into all the places that use database
+        # or just create a static method that will provide either Database or ServerData object
         self.skipped_piece: Piece = None
-        self._current_side_bottom: bool = False
+
         # for locking the selectable piece after destroying opponent piece until end of turn
         self._locked_piece: Piece = None
 
-    @property
-    def current_side_bottom(self):
-        return self._current_side_bottom
+    @staticmethod
+    def db():
+        return DatabaseProvider.get_database()
 
     def end_turn(self):
         self._locked_piece = None
 
-        self._current_side_bottom = not self._current_side_bottom
-
     @staticmethod
     def is_board_position(position: Vector2):
-        return 0 < position.x <= Database.board_size and 0 < position.y <= Database.board_size
+        return 0 < position.x <= RuleObserver.db().board_size and 0 < position.y <= RuleObserver.db().board_size
 
     def get_possible_moves(self, piece: Piece) -> List[PossibleMove]:
 
         directions = [Vector2(1, 1), Vector2(1, -1), Vector2(-1, 1), Vector2(-1, -1)]
 
         add_directions = []
-        for i in range(2, Database.board_size if piece.is_king else 3):
+        for i in range(2, self.db().board_size if piece.is_king else 3):
             for direction in directions:
                 add_directions.append(direction * i)
 
@@ -71,9 +70,9 @@ class RuleObserver(object):
         if not diff.is_diagonal:
             return self.Result.NOT_DIAGONAL
 
-        pieces_in_direction: List[Piece] = self.db.get_pieces_in_direction(piece.position, to_pos)
+        pieces_in_direction: List[Piece] = self.db().get_pieces_in_direction(piece.position, to_pos)
 
-        if self.db.get_piece_at(to_pos) is not None:
+        if self.db().get_piece_at(to_pos) is not None:
             return self.Result.SQUARE_OCCUPIED
 
         if not is_king:
@@ -103,19 +102,19 @@ class RuleObserver(object):
         self._locked_piece = piece
 
 
-    def move_piece(self, piece: Piece, to_pos: Vector2, destroy_skipped: bool = True):
+    def move_piece(self, piece: Piece, to_pos: Vector2):
 
         self.skipped_piece = None
         result = self.determine_movability(piece, to_pos)
 
         if result == self.Result.SUCCESS:
-            if to_pos.y == Database.board_size and piece.bottom_side \
+            if to_pos.y == self.db().board_size and piece.bottom_side \
                     or to_pos.y == 1 and not piece.bottom_side:
                 piece.is_king = True
-            self.db.move_piece(piece, to_pos)
+            self.db().move_piece(piece, to_pos)
 
-            if self.skipped_piece is not None and destroy_skipped:
-                self.db.destroy_piece(self.skipped_piece)
+            if self.skipped_piece is not None:
+                self.db().destroy_piece(self.skipped_piece)
                 self._locked_piece = piece
 
                 possible_moves = self.get_possible_moves(piece)
@@ -125,6 +124,7 @@ class RuleObserver(object):
 
 
             else:
+                print("none skipped, ending turn")
                 self.end_turn()
 
         return result

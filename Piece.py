@@ -22,6 +22,8 @@ class Piece(object):
     def create_from_db_object(dbr):
         return Piece(Vector2(dbr[1], dbr[2]), dbr[3] == 1, dbr[0], dbr[4] == 1)
 
+
+
     # figure out if we can move the piece to the specified position
     # we check for forward only movement, and if the position we are moving to
     # is empty

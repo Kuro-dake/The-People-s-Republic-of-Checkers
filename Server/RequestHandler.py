@@ -1,9 +1,11 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, parse_qsl
 from PositionQueryHandler import PositionQueryHandler
-from Database import Database
+from DatabaseProvider import DatabaseProvider
 from Server.GameServer import GameServer
 import pickle
+
+import ast
 
 import cgi
 
@@ -16,19 +18,24 @@ class RequestHandler(BaseHTTPRequestHandler):
         ctype, pdict = cgi.parse_header(self.headers['content-type'])
         if ctype == 'multipart/form-data':
             postvars = cgi.parse_multipart(self.rfile, pdict)
+
         elif ctype == 'application/x-www-form-urlencoded':
             length = int(self.headers['content-length'])
-            postvars = parse_qs(
-                self.rfile.read(length),keep_blank_values=1)
+            postvars = dict(parse_qsl(
+                self.rfile.read(length).decode("UTF-8"),keep_blank_values=1))
+
         else:
             postvars = {}
 
-        self.game_server.handle_request(postvars)
+        response = self.game_server.handle_request(postvars)
 
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
-        self.wfile.write(bytes(json.dumps({"result_code" : 1}), "utf-8"))
+        self.wfile.write(bytes(json.dumps(response), "utf-8"))
+
+    def log_message(self, format: str, *args) -> None:
+        pass
 
     def do_GET(self):
         
@@ -37,16 +44,16 @@ class RequestHandler(BaseHTTPRequestHandler):
         reply = "no attributes provided"
         if len(attr) != 0:
 
-            cs: Database = self.checkers_server
+            db = DatabaseProvider.get_database()
 
             if "new" in attr.keys():
-                cs.new_game()
+                db.new_game()
 
             move_query = attr["move"][0]
 
             reply = pqh.handle(move_query)
 
-            self.checkers_server.console_output_board()
+            db.console_output_board()
 
 
 

@@ -50,7 +50,9 @@ class Database(object):
 
     def destroy_piece(self, piece: Piece):
         cursor = connection.cursor()
-        cursor.execute("DELETE FROM {0} WHERE id={1}".format(self._table_name, piece.piece_id))
+        query = "DELETE FROM {0} WHERE id={1}".format(self._table_name, piece.piece_id)
+        print(query)
+        cursor.execute(query)
         connection.commit()
 
     def get_piece_at(self, pos: Union[Vector2, str]):
@@ -102,9 +104,7 @@ class Database(object):
         cursor.execute("SELECT * FROM {0} WHERE id={1}".format(self._table_name, piece_id))
         return Piece.create_from_db_object(cursor.fetchone())
 
-    def move_piece(self, piece: Union[int, Piece], x_or_pos, y=None) -> bool:
-
-        cursor = connection.cursor()
+    def parse_coordinates(self, x_or_pos, y = None) -> (int, int):
         x = x_or_pos
         if y is None:
             if type(x_or_pos) is str:
@@ -118,6 +118,17 @@ class Database(object):
                 y = x_or_pos.y
             else:
                 raise Exception("Undefined x_or_pos {0} of type {1}".format(x_or_pos, type(x_or_pos)))
+
+        return (x, y)
+
+    def move_piece(self, piece: Union[int, Piece], x_or_pos, y=None) -> bool:
+
+        cursor = connection.cursor()
+
+        pos = self.parse_coordinates(x_or_pos, y)
+
+        x = pos[0]
+        y = pos[1]
 
         if type(piece) is Piece:
             piece.position = Vector2(x, y)
