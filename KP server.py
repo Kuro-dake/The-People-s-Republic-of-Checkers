@@ -6,11 +6,12 @@ from http.server import HTTPServer
 from Server.RequestHandler import RequestHandler
 from Database import Database
 from DatabaseProvider import DatabaseProvider
+import Server.Config
 
 DatabaseProvider.database = Database()
 
-hostName = "localhost"
-serverPort = 8000
+hostName = Server.DBCredentials.SERVER_HOST
+serverPort = Server.DBCredentials.SERVER_PORT
 
 #cs = CheckersServer()
 #cs.new_game()

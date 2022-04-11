@@ -1,5 +1,5 @@
 import mysql.connector
-from Server import DBCredentials
+from Server import Config
 
 from Square import Square
 
@@ -8,7 +8,7 @@ from Vector2 import Vector2
 from Piece import Piece
 from typing import Union, List
 
-connection = mysql.connector.connect(host=DBCredentials.HOST,
+connection = mysql.connector.connect(host=DBCredentials.DB_HOST,
                                      database=DBCredentials.DATABASE,
                                      user=DBCredentials.USER,
                                      password=DBCredentials.PASSWORD)

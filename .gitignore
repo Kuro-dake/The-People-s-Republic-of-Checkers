@@ -1,4 +1,4 @@
 __pycache__
 .idea
-Server/DBCredentials.py
+#Server/Config.py
 Client/Config.py
