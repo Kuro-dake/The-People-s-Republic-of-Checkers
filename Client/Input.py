@@ -38,7 +38,7 @@ class Input(object):
                 self.board.select_piece(None)
                 if self.rules.locked_piece is not None:
                     self.rules.end_turn()
-                    #self.game.
+                    self.game.end_turn_cancel_further_skips()
 
                 return
 

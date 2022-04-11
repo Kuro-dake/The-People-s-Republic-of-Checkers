@@ -9,7 +9,7 @@ import requests
 from Client.ClientState import ClientState
 from typing import Union
 import json
-import Client.ServerCredentials
+import Client.Config
 
 from Square import Square
 
@@ -19,15 +19,23 @@ from Vector2 import Vector2
 
 class ServerData(Database):
 
-    URL = "http://{0}:{1}".format(Client.ServerCredentials.HOST, Client.ServerCredentials.PORT)
+    URL = "http://{0}:{1}".format(Client.Config.HOST, Client.Config.PORT)
     CLIENT_ID = time.time_ns() + random.randint(-10000, 10000)
 
     @staticmethod
     def get_server_data(game, data: dict = {}) -> ServerData:
-        send = {"client_id" : ServerData.CLIENT_ID, "client_state" : str(game.state)}
+        send = {"client_id" : ServerData.CLIENT_ID, "client_state" : str(game.state), "server_id" : game.server_id}
+        game.waiting_for_server = True
         for key in data.keys():
             send[key] = data[key]
-        response = requests.post(ServerData.URL, send)
+
+        try:
+            response = requests.post(ServerData.URL, send)
+        except requests.exceptions.ConnectionError:
+            print("Server returned no value. Will try again.")
+            return None
+
+        game.waiting_for_server = False
 
         return ServerData(response.json(), game)
 
@@ -59,6 +67,8 @@ class ServerData(Database):
         self.current_turn_bottom: bool = self._data_value("current_turn_bottom", None)
 
         self.game_ended: bool = self._data_value("game_ended", 0) == 1
+
+        self.server_id = self.data["server_id"]
 
     def _data_value(self, key: str, default):
         return self.data[key] if key in self.data.keys() else default

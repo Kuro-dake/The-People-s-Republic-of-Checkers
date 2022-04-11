@@ -43,7 +43,7 @@ class Board(object):
         mouse_square = self.get_square_position(mouse_pos.x, mouse_pos.y)
 
         possible_moves = []
-
+        self.screen.fill(Board.WHITE)
         if self.selected_piece is not None:
             possible_moves = self.rules.get_possible_moves(self.selected_piece)
 
