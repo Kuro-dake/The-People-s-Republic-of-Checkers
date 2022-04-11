@@ -38,26 +38,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
-        
-        attr: dict = parse_qs(urlparse(self.path).query, keep_blank_values=True)
-        pqh: PositionQueryHandler = PositionQueryHandler()
-        reply = "no attributes provided"
-        if len(attr) != 0:
 
-            db = DatabaseProvider.get_database()
-
-            if "new" in attr.keys():
-                db.new_game()
-
-            move_query = attr["move"][0]
-
-            reply = pqh.handle(move_query)
-
-            db.console_output_board()
-
-
-
-
+        reply = "Server is live"
 
         self.send_response(200)
         self.send_header("Content-type", "application/json")
