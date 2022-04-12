@@ -6,7 +6,7 @@ from http.server import HTTPServer
 from Server.requesthandler import RequestHandler
 from Server.mysqldata import MysqlData
 import common.database
-from Server import Config
+from Server import config
 
 #TODO: rename to ServerMain
 # or rename to Server, and rename ClientMain to Clien

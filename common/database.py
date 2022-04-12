@@ -6,38 +6,8 @@ from typing import Union, List
 from common.square import Square
 from common.vector import Vector2
 from common.piece import Piece
-import client.game
-
 
 class Database(ABC):
-
-    _inst: Database = None
-    _game: client.game.Game = None
-    _initialized = False
-
-    @staticmethod
-    def init(arg: Union[Database, client.game.Game]):
-        if Database._initialized:
-            raise Exception("Trying to reinitialize Database. This shouldn't be necessary.")
-        if type(arg) is Database:
-            Database._inst = arg
-        elif type(arg) is client.game.Game:
-            Database._game = arg
-        else:
-            raise Exception("Trying to initialize Database with '{0}'".format(arg))
-
-        Database._initialized = True
-
-    @staticmethod
-    def get() -> Database:
-        if not Database._initialized:
-            raise Exception("Database was not initialized")
-        if Database._inst is not None:
-            return Database._inst
-        if Database._game is not None:
-            return Database._game.server_data
-        else:
-            raise Exception("No database was set.")
 
     board_size = None
 

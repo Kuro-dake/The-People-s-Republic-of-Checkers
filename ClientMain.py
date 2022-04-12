@@ -1,11 +1,11 @@
-import common.database
+import common.dbprovider
 from client.game import Game
 
 import pygame
 
 game = Game()
 
-common.database.Database.init(game)
+common.dbprovider.DBProvider.init(game)
 game.main()
 
 pygame.quit()

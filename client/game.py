@@ -8,7 +8,7 @@ from common.rules import RuleObserver
 from client.board import Board
 from client.input import Input
 
-import client.Config
+import client.config
 
 from client.clientstate import ClientState
 

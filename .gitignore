@@ -1,7 +1,7 @@
 __pycache__
 .idea
-Server/Config.py
-client/Config.py
+Server/config.py
+client/config.py
 /build/
 /dist/
 /ClientMain.spec

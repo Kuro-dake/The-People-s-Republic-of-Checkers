@@ -3,7 +3,7 @@ from common.vector import Vector2
 from common.piece import Piece
 from common.rules import RuleObserver
 
-import common.database
+import common.dbprovider
 
 import pygame
 import numpy
@@ -33,7 +33,7 @@ class Board(object):
 
     @staticmethod
     def db():
-        return common.database.Database.get()
+        return common.dbprovider.DBProvider.get()
 
     def draw_board(self):
         mouse_pos = pygame.mouse.get_pos()

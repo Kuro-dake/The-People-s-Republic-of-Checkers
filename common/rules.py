@@ -3,7 +3,7 @@ from common.piece import Piece
 from common.vector import Vector2
 from common.possiblemove import PossibleMove
 
-import common.database
+import common.dbprovider
 
 from enum import Enum
 from typing import List
@@ -28,7 +28,7 @@ class RuleObserver(object):
 
     @staticmethod
     def db():
-        return common.database.Database.get()
+        return common.dbprovider.DBProvider.get()
 
     def end_turn(self):
         self._locked_piece = None

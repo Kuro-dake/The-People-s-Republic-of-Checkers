@@ -1,5 +1,5 @@
 import mysql.connector
-from Server import Config
+from Server import config
 
 from typing import Union, List
 from common.square import Square

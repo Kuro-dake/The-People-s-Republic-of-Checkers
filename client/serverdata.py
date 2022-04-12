@@ -2,20 +2,22 @@ from __future__ import annotations
 import random
 import time
 import requests
-import client.Config
+import client.config
 
 from typing import Union
 
 import sys
 from pathlib import Path
 
-import common.database
+sys.path.append(str(Path('.').absolute().parent))
+
+from common.database import Database
 from common.square import Square
 from common.piece import Piece
 from common.vector import Vector2
 
 
-class ServerData(common.database.Database):
+class ServerData(Database):
 
     URL = "http://{0}:{1}".format(client.Config.HOST, client.Config.PORT)
     CLIENT_ID = time.time_ns() + random.randint(-10000, 10000)
