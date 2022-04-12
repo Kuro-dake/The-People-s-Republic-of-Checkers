@@ -1,4 +1,8 @@
 __pycache__
 .idea
 Server/Config.py
-Client/Config.py
+client/Config.py
+/build/
+/dist/
+/ClientMain.spec
+/profilehooks.py

@@ -1,11 +1,13 @@
 from __future__ import annotations
-from Database import Database
-from Piece import Piece
-from Vector2 import Vector2
+from common.piece import Piece
+from common.vector import Vector2
+from common.possiblemove import PossibleMove
+
+import common.database
+
 from enum import Enum
 from typing import List
-from DatabaseProvider import DatabaseProvider
-from PossibleMove import PossibleMove
+
 
 # Logic regarding the checkers rules
 class RuleObserver(object):
@@ -26,7 +28,7 @@ class RuleObserver(object):
 
     @staticmethod
     def db():
-        return DatabaseProvider.get_database()
+        return common.database.Database.get()
 
     def end_turn(self):
         self._locked_piece = None

@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from typing import Union
-from DatabaseProvider import DatabaseProvider
-from Vector2 import Vector2
-import math
+from common.vector import Vector2
 
+import common.database
 
 class Square(object):
     """Tools for legitimizing Vector2 positions"""
@@ -20,7 +18,7 @@ class Square(object):
     @staticmethod
     def position_query_to_vector2(pos: str) -> Vector2:
         pos = Vector2.from_position_query(pos)
-        board_size = DatabaseProvider.get_database().board_size
+        board_size = common.database.Database.get().board_size
         if pos.x < 1 or pos.x > board_size or pos.y < 1 or pos.y > board_size:
             raise InvalidPositionQueryException("Invalid position query")
 

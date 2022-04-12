@@ -1,19 +1,17 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse, parse_qs, parse_qsl
-from PositionQueryHandler import PositionQueryHandler
-from DatabaseProvider import DatabaseProvider
-from Server.GameServer import GameServer
-import pickle
-
-import ast
+from http.server import BaseHTTPRequestHandler
+from urllib.parse import parse_qsl
+from Server.gameserver import GameServer
 
 import cgi
 
 import json
+
+from profilehooks import profile
+
 class RequestHandler(BaseHTTPRequestHandler):
 
     game_server = GameServer()
-
+    @profile
     def do_POST(self):
         ctype, pdict = cgi.parse_header(self.headers['content-type'])
         if ctype == 'multipart/form-data':

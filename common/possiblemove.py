@@ -1,5 +1,5 @@
-from Piece import Piece
-from Vector2 import Vector2
+from common.piece import Piece
+from common.vector import Vector2
 from dataclasses import dataclass
 
 

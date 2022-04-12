@@ -1,11 +1,9 @@
 import pygame
-from Square import Square
-import Piece
+from common.piece import Piece
 
-from Client.Board import Board
+from client.board import Board
 
-from Database import Database
-from RuleObserver import RuleObserver
+from common.rules import RuleObserver
 
 
 class Input(object):

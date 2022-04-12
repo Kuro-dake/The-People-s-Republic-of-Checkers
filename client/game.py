@@ -1,26 +1,19 @@
 from __future__ import annotations
-from ctypes import windll, Structure, wintypes, pointer
-import os
 
-import time
-from enum import  Enum
-import Vector2
+from ctypes import windll
+
+from common import vector
 import pygame
-from RuleObserver import RuleObserver
-from Client.Board import Board
-from Database import Database
-from Client.Input import Input
+from common.rules import RuleObserver
+from client.board import Board
+from client.input import Input
 
-import Client.Config
+import client.Config
 
-from Client.ClientState import ClientState
+from client.clientstate import ClientState
 
-from Client.ServerData import ServerData
+from client.serverdata import ServerData
 
-from Piece import Piece
-
-import requests
-import json
 
 class Game(object):
     def __init__(self):
@@ -44,6 +37,8 @@ class Game(object):
     def update_server_data(self, force: bool = False, data: dict = {}) -> bool:
         if pygame.time.get_ticks() - self.last_server_update > 1000 or self.last_server_update == 0 or force:
             server_response = ServerData.get_server_data(self, data)
+            #if server_response is None:
+            #    return False
             self.server_data = server_response if server_response is not None else self.server_data
 
             self.last_server_update = pygame.time.get_ticks()
@@ -54,7 +49,7 @@ class Game(object):
 
         #self.bottom_side = True if response["bottom_side"] == 1 else False
 
-        Vector2.Vector2.initialize()
+        vector.Vector2.initialize()
 
         # repeatedly send queries into game state
         while self.carry_on:
@@ -94,7 +89,8 @@ class Game(object):
                     self.state = ClientState.WAITING_FOR_TURN
             else:
                 print("Undefined state {0} in game loop. Exitting...".format(self.state))
-                exit()
+                self.carry_on = False
+                continue
 
             self.clock.tick(60)
 
@@ -116,7 +112,7 @@ class Game(object):
 
             print("server id {0}".format(self.server_id))
 
-            if Client.Config.CLIENT_DEBUG:
+            if client.Config.CLIENT_DEBUG:
                 self.position_window()
 
             return True
@@ -166,14 +162,8 @@ class Game(object):
             if self.input.handle_input_events(event):
                 turn_over = True
 
-
         self.board.draw_board()
         pygame.display.flip()
-
-        if not self.server_data.both_sides_have_pieces():
-            print("game over")
-            # db.new_game()
-            self.carry_on = False
 
         return turn_over
 

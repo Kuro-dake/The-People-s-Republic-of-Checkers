@@ -1,15 +1,14 @@
-from Database import  Database
-from Square import Square
-from Vector2 import Vector2
-from Piece import Piece
+from common.square import Square
+from common.vector import Vector2
+from common.piece import Piece
+from common.rules import RuleObserver
+
+import common.database
+
 import pygame
 import numpy
 from pygame import Color
-import math
 
-from RuleObserver import RuleObserver
-
-from DatabaseProvider import DatabaseProvider
 
 class Board(object):
 
@@ -34,7 +33,7 @@ class Board(object):
 
     @staticmethod
     def db():
-        return DatabaseProvider.get_database()
+        return common.database.Database.get()
 
     def draw_board(self):
         mouse_pos = pygame.mouse.get_pos()

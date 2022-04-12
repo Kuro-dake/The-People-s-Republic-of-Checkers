@@ -1,25 +1,23 @@
 from __future__ import annotations
-
-from Database import Database
-
 import random
 import time
-
 import requests
-from Client.ClientState import ClientState
+import client.Config
+
 from typing import Union
-import json
-import Client.Config
 
-from Square import Square
+import sys
+from pathlib import Path
 
-from Piece import Piece
-from Vector2 import Vector2
+import common.database
+from common.square import Square
+from common.piece import Piece
+from common.vector import Vector2
 
 
-class ServerData(Database):
+class ServerData(common.database.Database):
 
-    URL = "http://{0}:{1}".format(Client.Config.HOST, Client.Config.PORT)
+    URL = "http://{0}:{1}".format(client.Config.HOST, client.Config.PORT)
     CLIENT_ID = time.time_ns() + random.randint(-10000, 10000)
 
     @staticmethod
@@ -36,11 +34,11 @@ class ServerData(Database):
             return None
 
         game.waiting_for_server = False
-
+        #try:
         return ServerData(response.json(), game)
-
-    def new_game(self):
-        raise Exception("ServerData new_game method has no function and shouldn't be called")
+        #except requests.exceptions.JSONDecodeError:
+        #    print("There was an error parsing the server response. Will try again.")
+        #    return None
 
     def __init__(self, response_data: dict, game):
         self.data = response_data
@@ -52,9 +50,9 @@ class ServerData(Database):
 
         self.game = game
 
-        self.game_start = self._data_value("game_start", 0) == 1
+        self.game_start = self.__data_value("game_start", 0) == 1
 
-        self.pieces_data: dict = self._data_value("pieces", None)
+        self.pieces_data: dict = self.__data_value("pieces", None)
 
         self.pieces = []
         if self.pieces_data is not None:
@@ -62,15 +60,15 @@ class ServerData(Database):
                 data = self.pieces_data[key]
                 self.pieces.append(Piece(Vector2(data[0], data[1]), data[2], key, data[3]))
 
-        self.board_size = self._data_value("board_size", None)
+        self.board_size = self.__data_value("board_size", None)
 
-        self.current_turn_bottom: bool = self._data_value("current_turn_bottom", None)
+        self.current_turn_bottom: bool = self.__data_value("current_turn_bottom", None)
 
-        self.game_ended: bool = self._data_value("game_ended", 0) == 1
+        self.game_ended: bool = self.__data_value("game_ended", 0) == 1
 
         self.server_id = self.data["server_id"]
 
-    def _data_value(self, key: str, default):
+    def __data_value(self, key: str, default):
         return self.data[key] if key in self.data.keys() else default
 
     def get_all_pieces(self):
@@ -85,7 +83,7 @@ class ServerData(Database):
 
     def move_piece(self, piece: Union[int, Piece], x_or_pos, y=None) -> bool:
 
-        pos = self.parse_coordinates(x_or_pos, y)
+        pos = Database.parse_coordinates(x_or_pos, y)
 
         x = pos[0]
         y = pos[1]
@@ -95,7 +93,6 @@ class ServerData(Database):
 
         move_query = "{0}to{1}".format(Square.vector2_to_position_query(piece.position), Square.vector2_to_position_query(Vector2(x, y)))
 
-        piece.position = Vector2(x, y)
-
         self.get_server_data(self.game, {"move_query": move_query})
+
 

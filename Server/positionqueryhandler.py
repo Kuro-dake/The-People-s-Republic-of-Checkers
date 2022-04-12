@@ -1,10 +1,9 @@
-from DatabaseProvider import DatabaseProvider
-
-from Database import Database
-from Piece import Piece
-from Square import Square, InvalidPositionQueryException
-from Vector2 import Vector2
-from RuleObserver import RuleObserver
+import common.database
+from Server.mysqldata import MysqlData
+from common.piece import Piece
+from common.square import Square, InvalidPositionQueryException
+from common.vector import Vector2
+from common.rules import RuleObserver
 
 class PositionQueryHandler(object):
 
@@ -22,11 +21,11 @@ class PositionQueryHandler(object):
 
     @property
     def db(self):
-        return DatabaseProvider.get_database()
+        return common.database.Database.get()
 
     def handle(self, move_query: str) -> str:
 
-        db: Database = self.db
+        db: MysqlData = self.db
 
         if move_query == "exit":
             exit()

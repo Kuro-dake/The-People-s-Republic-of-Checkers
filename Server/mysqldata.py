@@ -1,12 +1,15 @@
 import mysql.connector
 from Server import Config
 
-from Square import Square
-
-from Vector2 import Vector2
-
-from Piece import Piece
 from typing import Union, List
+from common.square import Square
+from common.vector import Vector2
+from common.piece import Piece
+from common.database import Database
+
+
+#TODO: create a base Database class, make ServerData and this class inherit from it.
+# Also rename this class to MysqlData
 
 connection = mysql.connector.connect(host=Config.DB_HOST,
                                      database=Config.DATABASE,
@@ -14,7 +17,7 @@ connection = mysql.connector.connect(host=Config.DB_HOST,
                                      password=Config.PASSWORD)
 
 
-class Database(object):
+class MysqlData(Database):
     """The class that manages the input to DB and DB to response operations"""
 
     _table_name = "Pieces"
@@ -27,7 +30,7 @@ class Database(object):
     def new_game(self):
 
         cursor = connection.cursor()
-        if not self.checkTableExists(cursor, self._table_name):
+        if not MysqlData.__check_table_exists(cursor, self._table_name):
             print(self._deploy_queries)
             cursor.execute(self._deploy_queries)
 
@@ -80,7 +83,6 @@ class Database(object):
 
         return list(piece for piece in pieces if piece.position in positions)
 
-
     def get_all_pieces(self) -> List[Piece]:
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM {0}".format(self._table_name))
@@ -103,28 +105,11 @@ class Database(object):
         cursor.execute("SELECT * FROM {0} WHERE id={1}".format(self._table_name, piece_id))
         return Piece.create_from_db_object(cursor.fetchone())
 
-    def parse_coordinates(self, x_or_pos, y = None) -> (int, int):
-        x = x_or_pos
-        if y is None:
-            if type(x_or_pos) is str:
-
-                pos: Vector2 = Square.position_query_to_vector2(x)
-                x = pos.x
-                y = pos.y
-            elif type(x_or_pos) is Vector2:
-
-                x = x_or_pos.x
-                y = x_or_pos.y
-            else:
-                raise Exception("Undefined x_or_pos {0} of type {1}".format(x_or_pos, type(x_or_pos)))
-
-        return (x, y)
-
     def move_piece(self, piece: Union[int, Piece], x_or_pos, y=None) -> bool:
 
         cursor = connection.cursor()
 
-        pos = self.parse_coordinates(x_or_pos, y)
+        pos = Database.parse_coordinates(x_or_pos, y)
 
         x = pos[0]
         y = pos[1]
@@ -140,31 +125,10 @@ class Database(object):
         connection.commit()
 
     def console_output_board(self) -> None:
-        Database._console_output_pieces(self.get_all_pieces())
+        MysqlData._console_output_pieces(self.get_all_pieces())
 
     @staticmethod
-    def _console_output_pieces(pieces):
-
-        lines = []
-
-        for y in range(1, 9):
-            line = "{0}|".format(y)
-            for x in range(1, 9):
-                piece: Piece = next((p for p in pieces if p.position == Vector2(x, y)), None)
-
-                line += (hex(piece.piece_id).replace("0x", "") if piece is not None
-                         else "█" if Square.is_playable(Vector2(x, y)) else " ") + "|"
-            line += "{0}".format(y)
-            lines.append(line)
-
-        lines = lines[::-1]
-
-        print(" |A|B|C|D|E|F|G|H|")
-        for line in lines:
-            print(line)
-        print(" |A|B|C|D|E|F|G|H|")
-
-    def checkTableExists(self, dbcur, tablename):
+    def __check_table_exists(dbcur, tablename):
 
         dbcur.execute("""
             SELECT COUNT(*)
@@ -175,3 +139,4 @@ class Database(object):
             return True
 
         return False
+

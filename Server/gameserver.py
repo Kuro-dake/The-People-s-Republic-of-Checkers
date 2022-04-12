@@ -1,16 +1,15 @@
+from common.piece import Piece
+from common.rules import RuleObserver
+
+from Server.mysqldata import MysqlData
+from Server.positionqueryhandler import PositionQueryHandler
+from client.clientstate import ClientState
+
 import random
-import pickle
-from DatabaseProvider import DatabaseProvider
-from Client.ClientState import ClientState
-from Piece import Piece
-from Database import Database
-from PositionQueryHandler import PositionQueryHandler
-from RuleObserver import RuleObserver
 import time
-from enum import Enum
+
 
 class GameServer(object):
-
 
     def __init__(self):
         # id: bottom_side pairs defining the player client ids and their sides
@@ -21,6 +20,7 @@ class GameServer(object):
         self.game_id = None
         self.new_game()
         self.game_ended = False
+        self.db = MysqlData()
 
     def new_game(self):
         self.players = {}
@@ -32,10 +32,6 @@ class GameServer(object):
     @property
     def rules(self) -> RuleObserver:
         return self.move_query_handler.rules
-
-    @property
-    def db(self) -> Database:
-        return DatabaseProvider.get_database()
 
     def player_exists(self, player_id: str):
         return player_id in self.players.keys()

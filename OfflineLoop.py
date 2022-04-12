@@ -1,6 +1,6 @@
-from PositionQueryHandler import PositionQueryHandler
+from Server.positionqueryhandler import PositionQueryHandler
 
-from DatabaseProvider import DatabaseProvider
+from Server.mysqldata import MysqlData
 
 # this serves for development purposes so you can play the game
 # by console commands
@@ -9,7 +9,8 @@ class OfflineLoop(object):
     @staticmethod
     def main():
         loop = OfflineLoop()
-        db = DatabaseProvider.get_database()
+        db: MysqlData = MysqlData()
+
         bottom_side_turn: bool = True
 
         pqh: PositionQueryHandler = PositionQueryHandler()

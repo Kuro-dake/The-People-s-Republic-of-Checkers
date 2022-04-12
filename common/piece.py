@@ -1,9 +1,6 @@
 from __future__ import annotations
-from Square import Square
-from Vector2 import Vector2
-import Database
-
-import math
+from common.square import Square
+from common.vector import Vector2
 
 class Piece(object):
     """A pawn object that stores its position and state"""
