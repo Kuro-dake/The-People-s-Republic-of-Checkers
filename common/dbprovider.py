@@ -1,30 +1,26 @@
-from __future__ import annotations
-
-from typing import Union
-
-import client.game
-import common.database
-
-
+"""
+A kind of a service container for providing the right type of DB, primarily for RuleObserver
+(ServerData creates a new instance every time the server responds, so we need to keep track of that)
+Would keep it in common.database.Database but there were lots of circular import problems
+"""
 class DBProvider(object):
     _inst = None
-    _game: client.game.Game = None
+    _game = None
     _initialized = False
 
     @staticmethod
-    def init(arg):
+    def init(arg, is_game: bool):
         if DBProvider._initialized:
             raise Exception("Trying to reinitialize Database. This shouldn't be necessary.")
-        if type(arg) is common.database.Database:
+        if not is_game:
             DBProvider._inst = arg
-        elif type(arg) is client.game.Game:
-            DBProvider._game = arg
         else:
-            raise Exception("Trying to initialize Database with '{0}'".format(arg))
+            DBProvider._game = arg
+
         DBProvider._initialized = True
 
     @staticmethod
-    def get() -> common.database.Database:
+    def get():
         if not DBProvider._initialized:
             raise Exception("Database was not initialized")
         if DBProvider._inst is not None:

@@ -1,3 +1,7 @@
+"""
+Contains the main loop that manages communication with server, and forwarding the game to the input when it's
+player's turn
+"""
 from __future__ import annotations
 
 from ctypes import windll
@@ -21,55 +25,68 @@ class Game(object):
         pygame.display.set_caption("initializing People's republic of checkers")
         self.bottom_side = None
         self.clock = pygame.time.Clock()
+        # the time of the last server update, for delaying server updates
         self.last_server_update = 0
         self.rules: RuleObserver = RuleObserver()
         self.board: Board = None
         self.input = Input(self.board, self.rules, self)
 
+        # the main loop 'carries on' while true
         self.carry_on = True
+
+        # the "database" of the client, contains all the data from server regarding player turn, piece positions, etc.
         self.server_data: ServerData = None
+
         self.state: ClientState = ClientState.NEW
 
+        # the id of the game on the server. used to keep track of validity of client data
         self.server_id = None
 
-        self.waiting_for_server = False
-
+    # updates the server data and stores them for this and dependent classes to use
     def update_server_data(self, force: bool = False, data: dict = {}) -> bool:
+        """
+
+        @param force: Update even if the timeout hasn't finished running
+        @param data: additional data to send to the server
+        @return: True if updated else False
+        """
+        # make an attempt every 1000 milliseconds
         if pygame.time.get_ticks() - self.last_server_update > 1000 or self.last_server_update == 0 or force:
+
+            # update only if we got any data from server. keep the old data otherwise
             server_response = ServerData.get_server_data(self, data)
-            #if server_response is None:
-            #    return False
             self.server_data = server_response if server_response is not None else self.server_data
 
+            # keep the track of last update
             self.last_server_update = pygame.time.get_ticks()
             return True
+
         return False
 
+    # the main gameplay loop
     def main(self):
-
-        #self.bottom_side = True if response["bottom_side"] == 1 else False
 
         vector.Vector2.initialize()
 
         # repeatedly send queries into game state
         while self.carry_on:
 
+            # reset game if the game's server id is different from our stored server id
             if self.server_data is not None and self.server_id != self.server_data.server_id:
                 self.reset_game()
 
-            # --- Main event loop
+            # handle clicking 'close'
             for event in pygame.event.get(pygame.QUIT):
-                if event.type == pygame.QUIT:  # If user clicked close
+                if event.type == pygame.QUIT:
                     self.state = ClientState.QUIT
+                    # let the server know we closed the game
                     self.update_server_data(force=True)
-                    self.carry_on = False  # Flag that we are done so we can exit the while loop
-                    break
+                    # break the loop
+                    self.carry_on = False
+                    continue
 
-            # if server chokes, wait for the connection to restore
-            if self.waiting_for_server:
-                self.update_server_data()
-
-            elif self.state == ClientState.NEW:
+            # waiting for the server to assign us a side
+            if self.state == ClientState.NEW:
                 if self.new_game_tick():
                     self.state = ClientState.WAITING_FOR_SECOND_PLAYER
 
@@ -87,20 +104,34 @@ class Game(object):
             elif self.state == ClientState.PLAYER_TURN:
                 if self.player_turn_tick():
                     self.state = ClientState.WAITING_FOR_TURN
+
+            # quitting the game
+            elif self.state == ClientState.QUIT:
+                print("Quitting the game")
+                self.carry_on = False
+                continue
+            # undefined state
             else:
                 print("Undefined state {0} in game loop. Exitting...".format(self.state))
                 self.carry_on = False
                 continue
 
+            # pygame frame delay
             self.clock.tick(60)
 
+    # wait for the server to assign us a side
     def new_game_tick(self) -> bool:
-        # start by sending the random ID created in constructor to the server
-        # and assigning the side from response to this client
+        """
 
+        @return: True if ready to move to next ClientState
+        """
         self.update_server_data()
 
         if self.server_data is not None:
+
+            if "assign_bottom_side" not in self.server_data.data.keys():
+                print("Didn't get a side assigned. Will try again.")
+                return False
 
             self.bottom_side = True if self.server_data.data["assign_bottom_side"] == 1 else False
             self.server_id = self.server_data.server_id
@@ -112,15 +143,18 @@ class Game(object):
 
             print("server id {0}".format(self.server_id))
 
-            if client.Config.CLIENT_DEBUG:
+            if client.config.CLIENT_DEBUG:
                 self.position_window()
 
             return True
 
         return False
-
+    # wait until server tells us that a second player has connected into the game
     def waiting_for_second_player_tick(self) -> bool:
+        """
 
+        @return: True if ready to move to next ClientState
+        """
         ret: bool = False
 
         if self.update_server_data():
@@ -137,8 +171,12 @@ class Game(object):
 
         return ret
 
+    # wait until the server tells us it's our turn
     def waiting_for_turn_tick(self) -> bool:
+        """
 
+        @return: True if ready to move to next ClientState
+        """
         ret: bool = False
 
         if self.update_server_data():
@@ -154,8 +192,12 @@ class Game(object):
 
         return ret
 
+    # board control loop
     def player_turn_tick(self) -> bool:
+        """
 
+        @return: True if ready to move to next ClientState
+        """
         turn_over: bool = False
 
         for event in pygame.event.get():  # User did something
@@ -167,15 +209,19 @@ class Game(object):
 
         return turn_over
 
+    # ...
     def reset_game(self):
         self.server_data = None
         self.state = ClientState.NEW
 
+    # let the server know that you're forfeiting your option to chain skip opponent's pieces
     def end_turn_cancel_further_skips(self):
         print("Forfeiting further skips, ending turn")
         self.update_server_data(True, {"force_end_turn": 1})
         self.state = ClientState.WAITING_FOR_TURN
 
+    # position the window for the dev purposes (when having two client instances running, it's nice to have
+    # the windows next to each other, and with the same piece side on the same position)
     def position_window(self):
         position = (self.board.board_size + 1) * 100 if self.bottom_side else 10, 0
 

@@ -1,4 +1,8 @@
 from enum import Enum
+"""
+All the possible states of the client, used for communication with the server and also for managing the main game loop
+"""
+
 
 class ClientState(Enum):
     NEW = 0

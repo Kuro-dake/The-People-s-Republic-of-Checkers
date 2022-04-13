@@ -1,6 +1,6 @@
-from Server.positionqueryhandler import PositionQueryHandler
+from server.movequeryhandler import MoveQueryHandler
 
-from Server.mysqldata import MysqlData
+from server.mysqldata import MysqlData
 
 # this serves for development purposes so you can play the game
 # by console commands
@@ -13,7 +13,7 @@ class OfflineLoop(object):
 
         bottom_side_turn: bool = True
 
-        pqh: PositionQueryHandler = PositionQueryHandler()
+        pqh: MoveQueryHandler = MoveQueryHandler()
 
         while db.both_sides_have_pieces():
 

@@ -8,7 +8,7 @@ class Piece(object):
     def __init__(self, pos: Vector2, bottom_side: bool, piece_id: int, state: bool):
         # position on board
         self.position: Vector2 = pos
-        # piece starts on the bottom of the board.
+        # piece starts on the bottom of the board. top is interchangeable with green, bottom is interchangeable with red
         self.bottom_side = bottom_side
         self.piece_id = piece_id
         # man or king
@@ -19,18 +19,14 @@ class Piece(object):
     def create_from_db_object(dbr):
         return Piece(Vector2(dbr[1], dbr[2]), dbr[3] == 1, dbr[0], dbr[4] == 1)
 
-
-
     # figure out if we can move the piece to the specified position
-    # we check for forward only movement, and if the position we are moving to
-    # is empty
+    # we check for only for man (the base piece) rules constraint - forward movement,
+    # and if the position we are moving to is empty
     def can_move_to_man_constraints(self, target_position: Vector2, pieces_in_direction: Piece[int], piece_side: bool):
 
         diff = self.position - target_position
         if not diff.is_diagonal:
             return False
-        # print("isf {0}".format(Square.is_square_forward(self.position, target_position, self.bottom_side)))
-        # print("len {0}".format((diff.size.x == 1 or diff.size.x == 2 and len(pieces_in_direction) == 1)))
 
         piece_to_skip: Piece = None
 
@@ -45,12 +41,7 @@ class Piece(object):
         ret: bool = Square.is_square_forward(self.position, target_position, self.bottom_side)
         ret &= diff.size.x == 1
 
-
-        # print("ret {0}".format(ret))
         return ret
-
-
-
 
     # move by a specified vector
     def move_by(self, by: Vector2):
@@ -69,6 +60,7 @@ class Piece(object):
     def __repr__(self):
         return "Piece(#{0}:{1}: side {2})".format(self.piece_id, Square.vector2_to_position_query(self.position), self.bottom_side)
 
+    # override the == operator to compare piece_id values
     def __eq__(self, other: Piece):
         if other is None:
             return self is None
