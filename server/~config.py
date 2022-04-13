@@ -1,5 +1,5 @@
 """
-Template for configuration file of the server. Rename to config.py
+Template for configuration file of the server. Create a copy named config.py
 """
 
 DB_HOST = "localhost"

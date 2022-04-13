@@ -1,5 +1,5 @@
 """
-Template for configuration file of the client. Rename to config.py
+Template for configuration file of the client. Create a copy named config.py
 """
 
 HOST = "localhost"

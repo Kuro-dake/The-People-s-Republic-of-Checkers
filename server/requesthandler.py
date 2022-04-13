@@ -21,7 +21,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         elif ctype == 'application/x-www-form-urlencoded':
             length = int(self.headers['content-length'])
             postvars = dict(parse_qsl(
-                self.rfile.read(length).decode("UTF-8"),keep_blank_values=1))
+                self.rfile.read(length).decode("UTF-8"), keep_blank_values=1))
 
         else:
             postvars = {}
