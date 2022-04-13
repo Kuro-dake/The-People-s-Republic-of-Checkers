@@ -249,4 +249,4 @@ class Board(object):
     YELLOW_PIECE = (Color(158, 150, 37), Color(217, 206, 52))
 
     # the size of one board position on screen in pixels. Most of the other display values derive from it
-    SQUARE_SIZE = 70
+    SQUARE_SIZE = 100

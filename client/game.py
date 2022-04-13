@@ -185,7 +185,7 @@ class Game(object):
                 print("Your turn starts.")
                 ret = True
             else:
-                print("Waiting for opponent to finish his turn.")
+                print("Waiting for opponent to finish their turn.")
 
         self.board.draw_board()
         pygame.display.flip()

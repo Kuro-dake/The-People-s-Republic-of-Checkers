@@ -12,13 +12,16 @@ import time
 
 class GameServer(object):
 
+    # set true if you want to debug first move only on a single client (good for server dev/debug)
+    SINGLE_CLIENT_DEBUG = False
+
     def __init__(self):
         # id -> player side(top or bottom) pairs defining the player client ids and their sides
         self.players = {}
 
         self.game_started: bool = False
 
-        # which player's turn is it
+        # which player's turn is it.
         self.current_turn_bottom = random.randint(0, 2) == 1
 
         self.move_query_handler = MoveQueryHandler(RuleObserver())
@@ -26,19 +29,21 @@ class GameServer(object):
         # the id of the current game for client to keep track if another game hasn't started on the server
         self.game_id = None
 
+        self.db = MysqlData()
+
         # start a new game
         self.new_game()
-
-        self.db = MysqlData()
 
     # reset game values to new game state
     def new_game(self):
         self.players = {}
         self.game_started: bool = False
+
         self.current_turn_bottom = random.randint(0, 2) == 1
 
         self.game_id = time.time_ns() + random.randint(-10000, 10000)
         self.rules.lock_piece(None)
+        self.db.new_game()
 
     # use a move query handler rules object since it contains skipped piece and locked piece
     @property
@@ -57,9 +62,10 @@ class GameServer(object):
         # if player exists return their side
         if self.player_exists(player_id):
             return self.players[player_id]
-        # if there are no players yet, assign the player a random side
+        # if there are no players yet, assign the player a random side. Assign the green side when debugging
+        # with single client
         elif len(self.players) == 0:
-            self.players[player_id] = random.randint(0, 2) == 1
+            self.players[player_id] = False if GameServer.SINGLE_CLIENT_DEBUG else random.randint(0, 2) == 1
         # if there is one player ready for game already, assign the new player an opposing side
         elif len(self.players) == 1:
             self.players[player_id] = not list(self.players.values())[0]
@@ -103,9 +109,13 @@ class GameServer(object):
                 client_side_bottom = self.get_player_side(client_id)
                 ret["assign_bottom_side"] = 1 if client_side_bottom else 0
                 print("Assigned player {0} to {1}".format(parameters["client_id"], "bottom" if client_side_bottom else "top"))
-                # uncomment the next two lines if you need to dev/debug game start and first turn on single client
-                # self.current_turn_bottom = client_side_bottom
-                # self.get_player_side(0) # dev to create a second empty player
+
+                # set the current turn to the single client and create a dummy second client to start a game
+                # when we want to debug the server and avoid opening and switching between two clients
+                if GameServer.SINGLE_CLIENT_DEBUG:
+                    self.current_turn_bottom = client_side_bottom
+                    self.get_player_side(0)  # dev to create a second empty player
+
             except CorruptPlayerDataException:
                 ret["error_message"] = "Tried to create a third player. Wiping the game."
 
@@ -116,7 +126,9 @@ class GameServer(object):
         # but only after skipping a piece.
         elif "force_end_turn" in parameters.keys() and client_side_bottom == self.current_turn_bottom \
                 and self.rules.locked_piece is not None:
-            self.current_turn_bottom = not self.current_turn_bottom
+            # don't switch turns when debugging using single client
+            if not GameServer.SINGLE_CLIENT_DEBUG:
+                self.current_turn_bottom = not self.current_turn_bottom
             self.rules.lock_piece(None)
 
         # handle the client pinging while waiting for second player to connect
@@ -148,6 +160,7 @@ class GameServer(object):
 
             # if there was a move query provided
             if "move_query" in parameters.keys():
+
                 # we check if it's client's turn, and wipe the current game if it's not since
                 # this shouldn't be happening ever, and denotes weird things happening on client sides
                 if client_side_bottom != self.current_turn_bottom:
@@ -173,6 +186,7 @@ class GameServer(object):
                     return {}
 
                 # handle the move query and print the result message to server console
+                print("Executing move query " + move_query)
                 print(self.move_query_handler.handle(move_query))
 
                 # if there are no more pieces on one of the sides, the game is over, so we start a new one
@@ -180,8 +194,11 @@ class GameServer(object):
                     self.new_game()
                 # we switch the player turn at the end of the move if there's no subsequent possible skip move
                 elif self.rules.locked_piece is None:
-                    self.current_turn_bottom = not self.current_turn_bottom
-                    print("{0} turn starting".format("bottom" if self.current_turn_bottom else "top"))
+                    # don't switch turns when debugging using single client
+                    if not GameServer.SINGLE_CLIENT_DEBUG:
+                        self.current_turn_bottom = not self.current_turn_bottom
+                        print("{0} turn starting".format("bottom" if self.current_turn_bottom else "top"))
+                    self.db.console_output_board()
 
             # get all pieces from DB so we can send the current state of the board to client for syncing
             pieces = self.db.get_all_pieces()
@@ -194,6 +211,8 @@ class GameServer(object):
 
             # tell the client whose turn it is
             ret["current_turn_bottom"] = 1 if self.current_turn_bottom else 0
+
+
 
         return ret
 

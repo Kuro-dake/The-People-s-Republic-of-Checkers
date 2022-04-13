@@ -1,6 +1,7 @@
 """The class that manages the r/w to Mysql DB + some simple operations on Piece objects"""
 import mysql.connector
 from server import config
+import logging
 
 from typing import Union, List
 from common.square import Square
@@ -8,8 +9,10 @@ from common.vector import Vector2
 from common.piece import Piece
 from common.database import Database
 
-
-
+connection = mysql.connector.connect(host=config.DB_HOST,
+                                     database=config.DATABASE,
+                                     user=config.USER,
+                                     password=config.PASSWORD)
 
 class MysqlData(Database):
 
@@ -24,16 +27,15 @@ class MysqlData(Database):
     # the game will inevitably get stuck with board sizes over 8, and it's not really something worth fixing right now
     board_size = 8
 
-    def __init__(self):
-        self.connection = mysql.connector.connect(host=config.DB_HOST,
-                                                  database=config.DATABASE,
-                                                  user=config.USER,
-                                                  password=config.PASSWORD)
+    # get the global mysql connection object
+    @property
+    def connection(self):
+        return connection
 
     # get the database cursor object
     @property
     def db_cursor(self):
-        return self.connection.db_cursor()
+        return self.connection.cursor()
 
     # reset the db to a new game state
     def new_game(self):
@@ -125,7 +127,7 @@ class MysqlData(Database):
 
         query = "UPDATE {0} SET x_pos={1}, y_pos={2}, state={4} WHERE id={3}"\
             .format(self._table_name, x, y, piece_id, 1 if piece.is_king else 0)
-        # print(query)
+        print(query)
         cursor.execute(query)
         self.connection.commit()
 

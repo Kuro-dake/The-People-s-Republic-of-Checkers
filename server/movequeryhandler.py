@@ -43,6 +43,7 @@ class MoveQueryHandler(object):
         # try to parse the 'from' position
         try:
             from_pos: Vector2 = Square.position_query_to_vector2(move_query[0])
+            print("from {1} {0}".format( from_pos, move_query[0]))
             piece = db.get_piece_at(from_pos)
 
         except InvalidPositionQueryException:
@@ -51,6 +52,7 @@ class MoveQueryHandler(object):
         # try to parse the 'to' position
         try:
             to_pos: Square = Square.position_query_to_vector2(move_query[1])
+            print("to {1} {0}".format( to_pos, move_query[1]))
         except InvalidPositionQueryException:
             return "Invalid 'to' position query '{0}'".format(move_query[1])
 

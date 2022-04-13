@@ -44,24 +44,26 @@ class RuleObserver(object):
     # get all the possible moves for a given piece
     def get_possible_moves(self, piece: Piece) -> List[PossibleMove]:
 
-        # four directions in which a piece can move
-        movable_directions = [Vector2(1, 1), Vector2(1, -1), Vector2(-1, 1), Vector2(-1, -1)]
+        # four size 1 directions in which a piece can move
+        directions = [Vector2(1, 1), Vector2(1, -1), Vector2(-1, 1), Vector2(-1, -1)]
+
+        add_directions = []
+        for i in range(2, self.db().board_size if piece.is_king else 3):
+            for direction in directions:
+                add_directions.append(direction * i)
 
         # add directions up to 2 squares away only if the piece is man, add directions all the way to the side of the
         # board if the piece is king
-        directions = []
-        for i in range(1, self.db().board_size if piece.is_king else 3):
-            for direction in movable_directions:
-                directions.append(direction * i)
+        for added_direction in add_directions:
+            directions.append(added_direction)
+
 
         moves = []
-        for direction in movable_directions:
-
+        for direction in directions:
             target_position = piece.position + direction
             # check if the position is on the board
             # check if the piece can move to a position
             if RuleObserver.is_board_position(target_position) and self.can_piece_move_to(piece, target_position):
-
                 moves.append(PossibleMove(piece, piece.position + direction, self.skipped_piece is not None))
 
         return moves
@@ -154,7 +156,7 @@ class RuleObserver(object):
                 possible_moves = self.get_possible_moves(piece)
                 pm: PossibleMove
                 if len(list(pm for pm in possible_moves if pm.skips)) == 0:
-                    print("none skipped, ending turn")
+                    print("No more pieces to skip, ending turn")
                     self.end_turn()
                 else:
                     print("skipped a piece, turn continues")
