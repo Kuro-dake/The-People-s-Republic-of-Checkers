@@ -8,12 +8,12 @@ from client.clientstate import ClientState
 
 import random
 import time
+import server.config
 
 
 class GameServer(object):
 
-    # set true if you want to debug first move only on a single client (good for server dev/debug)
-    SINGLE_CLIENT_DEBUG = False
+    SINGLE_CLIENT_DEBUG = server.config.SINGLE_CLIENT_DEBUG
 
     def __init__(self):
         # id -> player side(top or bottom) pairs defining the player client ids and their sides

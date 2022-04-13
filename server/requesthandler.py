@@ -37,10 +37,10 @@ class RequestHandler(BaseHTTPRequestHandler):
     def log_message(self, format: str, *args) -> None:
         pass
 
-    # tell a browser the server is live and well
+    # tell a browser the server is alive and well
     def do_GET(self):
 
-        reply = "The server is live and well"
+        reply = "The server is alive and well"
 
         self.send_response(200)
         self.send_header("Content-type", "application/json")

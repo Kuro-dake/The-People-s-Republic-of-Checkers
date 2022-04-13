@@ -143,7 +143,7 @@ class Game(object):
 
             print("server id {0}".format(self.server_id))
 
-            if client.config.CLIENT_DEBUG:
+            if client.config.DEBUG:
                 self.position_window()
 
             return True
