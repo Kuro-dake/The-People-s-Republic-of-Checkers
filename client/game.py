@@ -55,10 +55,13 @@ class Game(object):
 
             # update only if we got any data from server. keep the old data otherwise
             server_response = ServerData.get_server_data(self, data)
+            if server_response.response_code == -1:
+                server_response = None
             self.server_data = server_response if server_response is not None else self.server_data
 
             # keep the track of last update
             self.last_server_update = pygame.time.get_ticks()
+
             return True
 
         return False
@@ -75,8 +78,10 @@ class Game(object):
             if self.server_data is not None and self.server_id != self.server_data.server_id:
                 self.reset_game()
 
-            # handle clicking 'close'
-            for event in pygame.event.get(pygame.QUIT):
+            # handle clicking 'close'. dump all the other events if it's not player's turn since
+            # there's an event loop in Game.player_turn_tick, and pygame stacks events every tick
+            # in a stack until it's handled/popped
+            for event in pygame.event.get(None if self.state != ClientState.PLAYER_TURN else pygame.QUIT):
                 if event.type == pygame.QUIT:
                     self.state = ClientState.QUIT
                     # let the server know we closed the game
@@ -119,7 +124,7 @@ class Game(object):
             # pygame frame delay
             self.clock.tick(60)
 
-    # wait for the server to assign us a side
+    # wait for the server to assign the client a side
     def new_game_tick(self) -> bool:
         """
 
@@ -149,6 +154,7 @@ class Game(object):
             return True
 
         return False
+
     # wait until server tells us that a second player has connected into the game
     def waiting_for_second_player_tick(self) -> bool:
         """

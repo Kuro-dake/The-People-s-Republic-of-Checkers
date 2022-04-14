@@ -40,7 +40,7 @@ class ServerData(Database):
             print("server returned no value. Will try again.")
             return None
 
-
+        # the game crashes with invalid json response. once again not worth investing more time into handling this error
         # try:
         return ServerData(response.json(), game)
         # except requests.exceptions.JSONDecodeError:
@@ -56,8 +56,7 @@ class ServerData(Database):
         # raw decoded json
         self.data = response_data
 
-        if response_data["response_code"] != 0:
-            raise Exception("server returned a non zero response code.")
+        self.response_code = self.__data_value("response_code", -1)
 
         self.game = game
 
